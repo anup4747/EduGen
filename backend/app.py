@@ -551,10 +551,12 @@ def api_get_flashcards(user_id, topic_id):
 
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))  # Render provides PORT
+
     socketio.run(
         app,
+        host="0.0.0.0",   # IMPORTANT: allow external access
+        port=port,
         debug=True,
-        host="127.0.0.1",
-        port=5000,
         allow_unsafe_werkzeug=True,
     )
