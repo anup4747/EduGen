@@ -3,7 +3,7 @@ import axios from "axios";
 import { MessageSquare, Send, Star, X, CheckCircle2 } from "lucide-react";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:5000/api";
+  import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_BACKEND_URL || "/api";
 
 const FEEDBACK_TYPES = [
   { id: "general", label: "General Feedback" },
