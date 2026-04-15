@@ -94,6 +94,9 @@ def ws_chat_stream(data):
     history = data.get("conversation_history") or []
     socketio.start_background_task(_run_chat_stream, sid, topic, context, history, message)
 
+@app.route("/")
+def health():
+    return {"status": "running"}
 
 @app.route("/api/topics/create", methods=["POST"])
 def api_topics_create():
