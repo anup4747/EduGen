@@ -97,8 +97,6 @@ export default function Dashboard({ user }) {
                    <div key={i} className="h-14 bg-slate-900/50 rounded-2xl animate-pulse"></div>
                 ))}
              </div>
-          ) : error ? (
-            <p className="text-sm text-rose-400 bg-rose-500/10 p-3 rounded-xl border border-rose-500/20">{error}</p>
           ) : topics.length === 0 ? (
             <p className="text-sm text-slate-500 px-2 font-medium italic">No topics yet</p>
           ) : (

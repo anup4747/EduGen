@@ -1,7 +1,9 @@
 import axios from "axios";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_BACKEND_URL || "/api";
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_BACKEND_URL ||
+  "/api";
 
 export const createExam = async (topic) => {
   try {
