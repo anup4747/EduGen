@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { LogOut, User, MessageCircle, BrainCircuit } from "lucide-react";
+import { LogOut, User, MessageCircle, Brain } from "lucide-react";
 
 function initials(name, fallback) {
   if (name) {
@@ -43,7 +43,7 @@ export default function Navbar({
         className="group flex items-center gap-3 rounded-full hover:bg-slate-900/50 px-2 py-1 transition-colors"
       >
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 border border-slate-800 text-white shadow-xl group-hover:bg-slate-800 group-hover:border-vscode-accent/50 transition-all">
-          <BrainCircuit size={20} className="text-vscode-accent" />
+          <Brain size={20} className="text-vscode-accent" />
         </div>
         <div className="hidden sm:block">
           <p className="text-sm font-bold text-white tracking-tight">EduGen AI</p>
