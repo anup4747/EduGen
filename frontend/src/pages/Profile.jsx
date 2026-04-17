@@ -6,6 +6,7 @@ import {
   getUserTopics,
   getProfile,
   updateProfile,
+  uploadProfilePicture,
 } from "../api/learnpath";
 import { User, CheckCircle2, Clock, BookOpen, Settings, X, Edit2, Save, ArrowLeft, Camera, Shield } from "lucide-react";
 
@@ -128,13 +129,32 @@ export default function Profile({ user }) {
     setSaving(true);
 
     try {
+      let finalAvatarUrl = avatarUrl;
+
+      // 1. Upload to Supabase if a new file is selected
+      if (avatarFile) {
+        try {
+          const uploadRes = await uploadProfilePicture(user.id, avatarFile);
+          if (uploadRes.success && uploadRes.profile_url) {
+            finalAvatarUrl = uploadRes.profile_url;
+            setAvatarUrl(finalAvatarUrl);
+            setAvatarData(""); // Clear base64 data as we now have a URL
+            setAvatarFile(null); // Clear file as it's uploaded
+          }
+        } catch (uploadErr) {
+          console.error("Image upload failed", uploadErr);
+          throw new Error("Failed to upload image to storage.");
+        }
+      }
+
+      // 2. Update other profile fields in MongoDB
       const profileResponse = await updateProfile(
         user.id,
         fullName,
         username,
         bio,
-        avatarData || undefined,
-        avatarUrl || undefined,
+        undefined, // avatarData is now handled by the upload route (cleared)
+        finalAvatarUrl,
       );
 
       if (profileResponse?.profile) {
@@ -146,7 +166,7 @@ export default function Profile({ user }) {
           full_name: fullName,
           username,
           bio,
-          avatar_url: avatarUrl,
+          avatar_url: finalAvatarUrl,
         },
       });
       if (updateError) throw updateError;

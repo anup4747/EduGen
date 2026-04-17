@@ -101,6 +101,17 @@ export async function updateProfile(
   return data;
 }
 
+export async function uploadProfilePicture(user_id, file) {
+  const formData = new FormData();
+  formData.append("userId", user_id);
+  formData.append("image", file);
+
+  const { data } = await api.post("/upload-profile-picture", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return data;
+}
+
 export async function deleteTopic(topic_id, user_id) {
   const { data } = await api.delete(`/topics/delete/${topic_id}`, {
     params: { user_id },

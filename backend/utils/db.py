@@ -389,6 +389,26 @@ def save_user_profile(user_id, full_name, username, bio, avatar_data=None, avata
     return profile
 
 
+def update_user_avatar(user_id, avatar_url):
+    now = datetime.utcnow()
+    result = profiles_col.find_one_and_update(
+        {"user_id": user_id},
+        {
+            "$set": {
+                "avatar_url": avatar_url,
+                "avatar_data": None,
+                "updated_at": now
+            },
+            "$setOnInsert": {"created_at": now}
+        },
+        upsert=True,
+        return_document=ReturnDocument.AFTER
+    )
+    if result and result.get("_id"):
+        result["_id"] = str(result["_id"])
+    return result
+
+
 def delete_topic(topic_id, user_id=None):
     oid = _oid(topic_id)
     if not oid:

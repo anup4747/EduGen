@@ -12,6 +12,7 @@ from flask_socketio import SocketIO, emit
 from utils import ai_engine, db
 from utils.ai_engine import chat_with_ai, chat_with_ai_stream
 from utils.content_generator import get_generation_status, start_generation_thread
+from utils.supabase_client import supabase
 
 load_dotenv()
 
@@ -402,6 +403,52 @@ def api_update_profile():
         return jsonify({"error": str(exc)}), 500
 
     return jsonify({"success": True, "profile": serialize_doc(profile)}), 200
+
+
+@app.route("/api/upload-profile-picture", methods=["POST"])
+def api_upload_profile_picture():
+    user_id = request.form.get("userId")
+    if not user_id:
+        return jsonify({"error": "userId is required"}), 400
+    
+    if "image" not in request.files:
+        return jsonify({"error": "No image file provided"}), 400
+    
+    file = request.files["image"]
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
+    
+    try:
+        # Create unique filename
+        ext = file.filename.split(".")[-1] if "." in file.filename else "png"
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"{user_id}/profile_{timestamp}.{ext}"
+        
+        # Read file content
+        file_content = file.read()
+        
+        # Upload to Supabase Storage
+        # Ensure the 'avatars' bucket exists in your Supabase project
+        res = supabase.storage.from_("avatars").upload(
+            path=filename,
+            file=file_content,
+            file_options={"content-type": file.content_type or "image/png"}
+        )
+        
+        # Get public URL
+        public_url = supabase.storage.from_("avatars").get_public_url(filename)
+        
+        # Update MongoDB
+        updated_profile = db.update_user_avatar(user_id, public_url)
+        
+        return jsonify({
+            "success": True, 
+            "profile_url": public_url,
+            "profile": serialize_doc(updated_profile)
+        }), 200
+        
+    except Exception as exc:
+        return jsonify({"error": f"Upload failed: {str(exc)}"}), 500
 
 
 @app.route("/api/topics/delete/<topic_id>", methods=["DELETE"])
