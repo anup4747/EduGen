@@ -19,6 +19,7 @@ import Login from "./pages/Login";
 import NewTopic from "./pages/NewTopic";
 import Profile from "./pages/Profile";
 import Signup from "./pages/Signup";
+import Pricing from "./pages/Pricing";
 
 function ProtectedRoute({ user, authLoading, children }) {
   const location = useLocation();
@@ -148,6 +149,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/pricing" element={<Pricing />} />
       <Route
         path="/login"
         element={

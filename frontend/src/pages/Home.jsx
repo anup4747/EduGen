@@ -104,7 +104,10 @@ export default function Home() {
             <Brain className="w-8 h-8 text-vscode-accent" />
             <span className="text-xl font-bold text-white tracking-tight">EduGen</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
+            <Link to="/pricing" className="hidden md:block text-sm font-semibold text-slate-300 hover:text-vscode-accent transition-colors">
+              Pricing
+            </Link>
             <Link to="/login" className="hidden sm:block px-4 py-2 text-sm font-semibold text-vscode-accent border border-vscode-accent rounded-full hover:bg-vscode-accent/10 transition-colors">
               Sign In
             </Link>
@@ -593,6 +596,7 @@ export default function Home() {
               <ul className="space-y-3 text-sm text-slate-400">
                 <li><button onClick={() => scrollToSection('how-it-works')} className="hover:text-vscode-accent transition-colors">How It Works</button></li>
                 <li><button onClick={() => scrollToSection('features')} className="hover:text-vscode-accent transition-colors">Features</button></li>
+                <li><Link to="/pricing" className="hover:text-vscode-accent transition-colors">Pricing</Link></li>
                 <li><Link to="/signup" className="hover:text-vscode-accent transition-colors">Start Learning</Link></li>
                 <li><Link to="/login" className="hover:text-vscode-accent transition-colors">Sign In</Link></li>
               </ul>
