@@ -1,14 +1,19 @@
 import React from "react";
+import {useState, useEffect} from "react"
 import { Link } from "react-router-dom";
 import { Check, X, Zap, Sparkles, Brain, Cpu, MessageCircle, FileText, Bookmark, Database, Infinity } from "lucide-react";
 
 const PricingCard = ({ title, price, description, features, buttonText, highlighted, icon: Icon, accentColor }) => {
+  
+  
   return (
     <div className={`relative flex flex-col p-8 rounded-[2.5rem] border transition-all duration-500 group ${
       highlighted 
         ? "bg-slate-900/80 border-vscode-accent shadow-[0_0_40px_rgba(124,58,237,0.2)] scale-105 z-10" 
         : "bg-slate-950/50 border-slate-800 hover:border-slate-700 hover:bg-slate-900/50"
     }`}>
+
+      
       {highlighted && (
         <div className="absolute -top-5 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-vscode-accent text-white text-xs font-bold rounded-full shadow-lg tracking-wider uppercase">
           Most Popular
@@ -53,6 +58,17 @@ const PricingCard = ({ title, price, description, features, buttonText, highligh
 };
 
 export default function Pricing() {
+
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const plans = [
     {
       title: "Free",
@@ -115,6 +131,30 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-vscode-bg text-vscode-text font-['Inter'] selection:bg-vscode-accent selection:text-white pb-24">
+       <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-slate-950/80 backdrop-blur-md border-b border-slate-800' : 'bg-transparent'}`}>
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+           <Link
+              to="/"
+              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-300 transition hover:text-white"
+            >
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
+            <Brain className="w-8 h-8 text-vscode-accent" />
+            <span className="text-xl font-bold text-white tracking-tight">EduGen</span>
+          </div>
+            </Link>
+          <div className="flex items-center gap-6">
+            <Link to="/pricing" className="hidden md:block text-sm font-semibold text-slate-300 hover:text-vscode-accent transition-colors">
+              Pricing
+            </Link>
+            <Link to="/login" className="hidden sm:block px-4 py-2 text-sm font-semibold text-vscode-accent border border-vscode-accent rounded-full hover:bg-vscode-accent/10 transition-colors">
+              Sign In
+            </Link>
+            <Link to="/signup" className="px-5 py-2.5 text-sm font-semibold text-white bg-vscode-accent rounded-full hover:bg-vscode-accent/90 transition-colors shadow-[0_0_15px_rgba(124,58,237,0.4)]">
+              Get Started Free
+            </Link>
+          </div>
+        </div>
+      </nav>
       {/* Background Decor */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-vscode-accent/10 rounded-full blur-[120px] animate-float1"></div>
