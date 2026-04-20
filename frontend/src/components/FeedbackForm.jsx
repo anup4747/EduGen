@@ -67,15 +67,15 @@ export default function FeedbackForm({ user, onClose }) {
 
   if (success) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 px-6 text-center animate-[fade-in-up_0.3s_ease-out_forwards]">
-        <div className="w-20 h-20 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
-          <CheckCircle2 size={40} />
+      <div className="flex flex-col items-center justify-center py-8 sm:py-12 px-4 sm:px-6 text-center animate-[fade-in-up_0.3s_ease-out_forwards]">
+        <div className="w-16 sm:w-20 h-16 sm:h-20 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full flex items-center justify-center mb-4 sm:mb-6 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+          <CheckCircle2 size={32} className="sm:w-10 sm:h-10" />
         </div>
-        <h3 className="text-2xl font-bold text-white tracking-tight mb-3">
+        <h3 className="text-lg sm:text-2xl font-bold text-white tracking-tight mb-2 sm:mb-3">
           Thank you!
         </h3>
-        <p className="text-slate-400 font-medium max-w-[280px]">
-          Your feedback is crucial and helps us improve LearnerPath AI every
+        <p className="text-xs sm:text-sm text-slate-400 font-medium max-w-xs">
+          Your feedback is crucial and helps us improve EduGen every
           single day.
         </p>
       </div>
@@ -83,31 +83,31 @@ export default function FeedbackForm({ user, onClose }) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-2">
-      <div className="flex items-center gap-4 mb-8">
-        <div className="p-3 bg-vscode-accent/10 text-vscode-accent border border-vscode-accent/20 rounded-2xl">
+    <div className="w-full px-2 sm:px-4">
+      <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8 flex-wrap sm:flex-nowrap">
+        <div className="p-2 sm:p-3 bg-vscode-accent/10 text-vscode-accent border border-vscode-accent/20 rounded-2xl flex-shrink-0">
           <MessageSquare size={24} />
         </div>
-        <div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">
+        <div className="flex-1 min-w-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
             Share Feedback
           </h2>
-          <p className="text-sm font-medium text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm font-medium text-slate-400 mt-1">
             Help us build the perfect learning experience.
           </p>
         </div>
         {onClose && (
           <button
             onClick={onClose}
-            className="ml-auto p-2.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex-shrink-0"
           >
             <X size={20} />
           </button>
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5">
           <div className="space-y-2 group">
             <label className="block text-[10px] uppercase tracking-widest font-bold text-slate-500 group-focus-within:text-vscode-accent transition-colors">
               Name *
@@ -117,7 +117,7 @@ export default function FeedbackForm({ user, onClose }) {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/50 px-4 py-3.5 text-slate-100 outline-none transition-all focus:border-vscode-accent focus:bg-slate-900 focus:ring-4 focus:ring-vscode-accent/10"
+              className="w-full rounded-xl sm:rounded-2xl border border-slate-700/80 bg-slate-900/50 px-3 sm:px-4 py-2.5 sm:py-3.5 text-sm text-slate-100 outline-none transition-all focus:border-vscode-accent focus:bg-slate-900 focus:ring-4 focus:ring-vscode-accent/10"
               placeholder="Your name"
               required
             />
@@ -132,7 +132,7 @@ export default function FeedbackForm({ user, onClose }) {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/50 px-4 py-3.5 text-slate-100 outline-none transition-all focus:border-vscode-accent focus:bg-slate-900 focus:ring-4 focus:ring-vscode-accent/10"
+              className="w-full rounded-xl sm:rounded-2xl border border-slate-700/80 bg-slate-900/50 px-3 sm:px-4 py-2.5 sm:py-3.5 text-sm text-slate-100 outline-none transition-all focus:border-vscode-accent focus:bg-slate-900 focus:ring-4 focus:ring-vscode-accent/10"
               placeholder="hello@example.com"
               required
             />
@@ -143,7 +143,7 @@ export default function FeedbackForm({ user, onClose }) {
           <label className="block text-[10px] uppercase tracking-widest font-bold text-slate-500 mb-3">
             Overall Experience *
           </label>
-          <div className="flex items-center gap-2 bg-slate-900/50 p-4 rounded-3xl border border-slate-800 w-fit">
+          <div className="flex items-center gap-1 sm:gap-2 bg-slate-900/50 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-slate-800 w-full sm:w-fit overflow-x-auto">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
                 key={star}
@@ -151,7 +151,7 @@ export default function FeedbackForm({ user, onClose }) {
                 onClick={() =>
                   setFormData((prev) => ({ ...prev, rating: star }))
                 }
-                className={`transition-all duration-200 hover:scale-110 p-1.5 rounded-full ${
+                className={`transition-all duration-200 hover:scale-110 p-1 sm:p-1.5 rounded-full flex-shrink-0 ${
                   star <= formData.rating
                     ? "text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]"
                     : "text-slate-700 hover:text-slate-500 hover:bg-slate-800"
@@ -159,15 +159,16 @@ export default function FeedbackForm({ user, onClose }) {
               >
                 <div className="relative">
                   <Star
-                    size={26}
+                    size={20}
+                    className="sm:w-[26px] sm:h-[26px]"
                     fill={star <= formData.rating ? "currentColor" : "none"}
                     strokeWidth={star <= formData.rating ? 0 : 2}
                   />
                 </div>
               </button>
             ))}
-            <div className="h-8 w-px bg-slate-800 mx-2"></div>
-            <span className="text-sm font-bold text-slate-300 w-24 text-center">
+            <div className="h-6 sm:h-8 w-px bg-slate-800 mx-1 sm:mx-2 flex-shrink-0"></div>
+            <span className="text-xs sm:text-sm font-bold text-slate-300 whitespace-nowrap flex-shrink-0">
               {
                 ["Poor", "Fair", "Good", "Great", "Exceptional"][
                   formData.rating - 1
@@ -185,7 +186,7 @@ export default function FeedbackForm({ user, onClose }) {
             name="feedback_type"
             value={formData.feedback_type}
             onChange={handleChange}
-            className="w-full rounded-2xl border border-slate-700/80 bg-slate-900/50 px-4 py-3.5 text-slate-100 outline-none transition-all focus:border-vscode-accent focus:bg-slate-900 focus:ring-4 focus:ring-vscode-accent/10 appearance-none cursor-pointer"
+            className="w-full rounded-xl sm:rounded-2xl border border-slate-700/80 bg-slate-900/50 px-3 sm:px-4 py-2.5 sm:py-3.5 text-sm text-slate-100 outline-none transition-all focus:border-vscode-accent focus:bg-slate-900 focus:ring-4 focus:ring-vscode-accent/10 appearance-none cursor-pointer"
             required
           >
             {FEEDBACK_TYPES.map((type) => (
@@ -205,25 +206,25 @@ export default function FeedbackForm({ user, onClose }) {
             value={formData.message}
             onChange={handleChange}
             rows={4}
-            className="w-full resize-none rounded-2xl border border-slate-700/80 bg-slate-900/50 px-4 py-3.5 text-slate-100 outline-none transition-all focus:border-vscode-accent focus:bg-slate-900 focus:ring-4 focus:ring-vscode-accent/10 custom-scrollbar"
+            className="w-full resize-none rounded-xl sm:rounded-2xl border border-slate-700/80 bg-slate-900/50 px-3 sm:px-4 py-2.5 sm:py-3.5 text-sm text-slate-100 outline-none transition-all focus:border-vscode-accent focus:bg-slate-900 focus:ring-4 focus:ring-vscode-accent/10 custom-scrollbar"
             placeholder="Tell us everything..."
             required
           />
         </div>
 
         {error && (
-          <div className="animate-[fade-in_0.2s_ease-out_forwards] rounded-xl bg-rose-500/10 p-3 border border-rose-500/20">
-            <p className="text-sm font-medium text-rose-400 text-center">
+          <div className="animate-[fade-in_0.2s_ease-out_forwards] rounded-lg sm:rounded-xl bg-rose-500/10 p-2 sm:p-3 border border-rose-500/20">
+            <p className="text-xs sm:text-sm font-medium text-rose-400 text-center">
               {error}
             </p>
           </div>
         )}
 
-        <div className="pt-2">
+        <div className="pt-1 sm:pt-2">
           <button
             type="submit"
             disabled={loading}
-            className="group relative overflow-hidden flex items-center justify-center gap-2 w-full rounded-2xl bg-vscode-accent px-5 py-4 text-sm font-bold text-white shadow-[0_0_20px_rgba(124,58,237,0.3)] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:scale-100 disabled:opacity-50"
+            className="group relative overflow-hidden flex items-center justify-center gap-2 w-full rounded-xl sm:rounded-2xl bg-vscode-accent px-4 sm:px-5 py-3 sm:py-4 text-xs sm:text-sm font-bold text-white shadow-[0_0_20px_rgba(124,58,237,0.3)] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:scale-100 disabled:opacity-50"
           >
             <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[100%] group-hover:animate-[shimmer_1.5s_infinite]"></div>
             <Send size={16} className="relative z-10" />

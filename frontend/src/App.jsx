@@ -90,13 +90,15 @@ function AuthenticatedLayout({ user, children }) {
       />
       {children}
       {showFeedback && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 rounded-[2rem] p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto ring-1 ring-slate-800">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold text-white">Feedback</h2>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-2 sm:p-4 z-50">
+          <div className="bg-slate-900 rounded-lg sm:rounded-2xl md:rounded-[2rem] p-4 sm:p-6 md:p-8 max-w-2xl sm:max-w-3xl md:max-w-4xl w-full max-h-[85vh] sm:max-h-[90vh] overflow-y-auto ring-1 ring-slate-800">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-white">
+                Feedback
+              </h2>
               <button
                 onClick={() => setShowFeedback(false)}
-                className="text-slate-400 hover:text-white text-2xl"
+                className="text-slate-400 hover:text-white text-xl sm:text-2xl flex-shrink-0"
               >
                 ×
               </button>
