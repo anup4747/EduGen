@@ -113,7 +113,7 @@ for plan_title, price, description, features in [
     ),
     (
         'Pro',
-        '$19 / month',
+        '$10 / year',
         'Recommended for committed learners who need more content and AI support.',
         [
             '7 total courses',
@@ -128,7 +128,7 @@ for plan_title, price, description, features in [
     ),
     (
         'Power',
-        '$49 / month',
+        '$25 / year',
         'The premium tier for power users who want unlimited content and advanced AI memory.',
         [
             'Unlimited courses',
