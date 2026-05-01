@@ -1,8 +1,14 @@
-import express from 'express';
-import { verifyToken } from '../middleware/auth.js';
-import * as db from '../utils/db.js';
-import { generateRoadmap, generateChapterContent, generateQuiz, generateMidtermExam, generateFinalExam } from '../utils/ai_engine.js';
-import { createProfile, getProfile } from '../utils/db.js';
+import express from "express";
+import { verifyToken } from "../middleware/auth.js";
+import * as db from "../utils/db.js";
+import {
+  generateRoadmap,
+  generateChapterContent,
+  generateQuiz,
+  generateMidtermExam,
+  generateFinalExam,
+} from "../utils/ai_engine.js";
+import { createProfile, getProfile } from "../utils/db.js";
 
 const router = express.Router();
 
@@ -19,7 +25,7 @@ const generateTopicContent = async (topicId, topic, level, roadmap) => {
           chapter.chapter_number,
           chapter.title,
           chapter.description,
-          chapter.key_concepts
+          chapter.key_concepts,
         );
 
         // Save chapter
@@ -31,7 +37,7 @@ const generateTopicContent = async (topicId, topic, level, roadmap) => {
           content,
           chapter.reading_time,
           chapter.difficulty,
-          chapter.key_concepts
+          chapter.key_concepts,
         );
 
         // Generate quiz
@@ -39,31 +45,34 @@ const generateTopicContent = async (topicId, topic, level, roadmap) => {
           topic,
           chapter.chapter_number,
           chapter.title,
-          content
+          content,
         );
 
         await db.createQuiz(topicId, chapter.chapter_number, questions);
       } catch (error) {
-        console.error(`Error generating chapter ${chapter.chapter_number}:`, error);
+        console.error(
+          `Error generating chapter ${chapter.chapter_number}:`,
+          error,
+        );
       }
     }
 
     // Update topic status to completed
-    await db.updateTopic(topicId, { status: 'completed' });
+    await db.updateTopic(topicId, { status: "completed" });
   } catch (error) {
-    console.error('Error generating topic content:', error);
-    await db.updateTopic(topicId, { status: 'failed' });
+    console.error("Error generating topic content:", error);
+    await db.updateTopic(topicId, { status: "failed" });
   }
 };
 
 // ==================== CREATE TOPIC ====================
-router.post('/create', verifyToken, async (req, res) => {
+router.post("/create", verifyToken, async (req, res) => {
   try {
     const { topic_name, level } = req.body;
     const userId = req.userId;
 
     if (!topic_name || !level) {
-      return res.status(400).json({ error: 'Topic name and level required' });
+      return res.status(400).json({ error: "Topic name and level required" });
     }
 
     // Create profile if doesn't exist
@@ -82,22 +91,22 @@ router.post('/create', verifyToken, async (req, res) => {
     await db.updateTopicRoadmap(topic.id, roadmap);
 
     // Start background content generation
-    generateTopicContent(topic.id, topic_name, level, roadmap).catch(err => {
-      console.error('Background generation error:', err);
+    generateTopicContent(topic.id, topic_name, level, roadmap).catch((err) => {
+      console.error("Background generation error:", err);
     });
 
     res.json({
       topic_id: topic.id,
       roadmap: roadmap,
-      status: 'pending',
+      status: "pending",
     });
   } catch (error) {
-    console.error('Create topic error:', error);
-    let errorMessage = 'Failed to create topic';
+    console.error("Create topic error:", error);
+    let errorMessage = "Failed to create topic";
 
     if (error.message) {
       try {
-        const jsonStartIndex = error.message.indexOf('{');
+        const jsonStartIndex = error.message.indexOf("{");
         if (jsonStartIndex !== -1) {
           const jsonStr = error.message.substring(jsonStartIndex);
           const parsed = JSON.parse(jsonStr);
@@ -112,8 +121,9 @@ router.post('/create', verifyToken, async (req, res) => {
       }
     }
 
-    if (errorMessage.includes('503') || errorMessage.includes('high demand')) {
-      errorMessage = 'The AI model is currently experiencing high demand. Please try again later.';
+    if (errorMessage.includes("503") || errorMessage.includes("high demand")) {
+      errorMessage =
+        "The AI model is currently experiencing high demand. Please try again later.";
     }
 
     res.status(500).json({ error: errorMessage });
@@ -121,49 +131,49 @@ router.post('/create', verifyToken, async (req, res) => {
 });
 
 // ==================== GET TOPIC ====================
-router.get('/:topic_id', verifyToken, async (req, res) => {
+router.get("/:topic_id", verifyToken, async (req, res) => {
   try {
     const topic = await db.getTopic(req.params.topic_id);
 
     if (!topic) {
-      return res.status(404).json({ error: 'Topic not found' });
+      return res.status(404).json({ error: "Topic not found" });
     }
 
     // Verify ownership
     if (topic.user_id !== req.userId) {
-      return res.status(403).json({ error: 'Unauthorized' });
+      return res.status(403).json({ error: "Unauthorized" });
     }
 
     res.json(topic);
   } catch (error) {
-    console.error('Get topic error:', error);
-    res.status(500).json({ error: 'Failed to get topic' });
+    console.error("Get topic error:", error);
+    res.status(500).json({ error: "Failed to get topic" });
   }
 });
 
 // ==================== GET USER TOPICS ====================
-router.get('/', verifyToken, async (req, res) => {
+router.get("/", verifyToken, async (req, res) => {
   try {
     const topics = await db.getUserTopics(req.userId);
     res.json(topics);
   } catch (error) {
-    console.error('Get topics error:', error);
-    res.status(500).json({ error: 'Failed to get topics' });
+    console.error("Get topics error:", error);
+    res.status(500).json({ error: "Failed to get topics" });
   }
 });
 
 // ==================== CHECK TOPIC STATUS ====================
-router.get('/status/:topic_id', verifyToken, async (req, res) => {
+router.get("/status/:topic_id", verifyToken, async (req, res) => {
   try {
     const topic = await db.getTopic(req.params.topic_id);
 
     if (!topic) {
-      return res.status(404).json({ error: 'Topic not found' });
+      return res.status(404).json({ error: "Topic not found" });
     }
 
     // Verify ownership
     if (topic.user_id !== req.userId) {
-      return res.status(403).json({ error: 'Unauthorized' });
+      return res.status(403).json({ error: "Unauthorized" });
     }
 
     res.json({
@@ -173,46 +183,46 @@ router.get('/status/:topic_id', verifyToken, async (req, res) => {
       roadmap: topic.roadmap,
     });
   } catch (error) {
-    console.error('Check status error:', error);
-    res.status(500).json({ error: 'Failed to check status' });
+    console.error("Check status error:", error);
+    res.status(500).json({ error: "Failed to check status" });
   }
 });
 
 // ==================== DELETE TOPIC ====================
-router.delete('/:topic_id', verifyToken, async (req, res) => {
+router.delete("/:topic_id", verifyToken, async (req, res) => {
   try {
     const topic = await db.getTopic(req.params.topic_id);
 
     if (!topic) {
-      return res.status(404).json({ error: 'Topic not found' });
+      return res.status(404).json({ error: "Topic not found" });
     }
 
     // Verify ownership
     if (topic.user_id !== req.userId) {
-      return res.status(403).json({ error: 'Unauthorized' });
+      return res.status(403).json({ error: "Unauthorized" });
     }
 
     await db.deleteTopic(req.params.topic_id);
-    res.json({ message: 'Topic deleted successfully' });
+    res.json({ message: "Topic deleted successfully" });
   } catch (error) {
-    console.error('Delete topic error:', error);
-    res.status(500).json({ error: 'Failed to delete topic' });
+    console.error("Delete topic error:", error);
+    res.status(500).json({ error: "Failed to delete topic" });
   }
 });
 
 // ==================== COMPLETE TOPIC ====================
-router.post('/:topic_id/complete', verifyToken, async (req, res) => {
+router.post("/:topic_id/complete", verifyToken, async (req, res) => {
   try {
     const { total_score, max_score } = req.body;
     const topic = await db.getTopic(req.params.topic_id);
 
     if (!topic) {
-      return res.status(404).json({ error: 'Topic not found' });
+      return res.status(404).json({ error: "Topic not found" });
     }
 
     // Verify ownership
     if (topic.user_id !== req.userId) {
-      return res.status(403).json({ error: 'Unauthorized' });
+      return res.status(403).json({ error: "Unauthorized" });
     }
 
     const updated = await db.updateTopic(req.params.topic_id, {
@@ -223,41 +233,51 @@ router.post('/:topic_id/complete', verifyToken, async (req, res) => {
 
     res.json(updated);
   } catch (error) {
-    console.error('Complete topic error:', error);
-    res.status(500).json({ error: 'Failed to complete topic' });
+    console.error("Complete topic error:", error);
+    res.status(500).json({ error: "Failed to complete topic" });
   }
 });
 
 // ==================== GENERATE EXAM ====================
-router.post('/:topic_id/generate-exam', verifyToken, async (req, res) => {
+router.post("/:topic_id/generate-exam", verifyToken, async (req, res) => {
   try {
     const { exam_type } = req.body;
 
-    if (!exam_type || !['midterm', 'final'].includes(exam_type)) {
-      return res.status(400).json({ error: 'Valid exam_type (midterm/final) required' });
+    if (!exam_type || !["midterm", "final"].includes(exam_type)) {
+      return res
+        .status(400)
+        .json({ error: "Valid exam_type (midterm/final) required" });
     }
 
     const topic = await db.getTopic(req.params.topic_id);
 
     if (!topic) {
-      return res.status(404).json({ error: 'Topic not found' });
+      return res.status(404).json({ error: "Topic not found" });
     }
 
     // Verify ownership
     if (topic.user_id !== req.userId) {
-      return res.status(403).json({ error: 'Unauthorized' });
+      return res.status(403).json({ error: "Unauthorized" });
     }
 
     // Get chapters for context
     const chapters = await db.getChapters(req.params.topic_id);
-    const chapterTitles = chapters.map(c => c.title);
+    const chapterTitles = chapters.map((c) => c.title);
 
     // Generate exam based on type
     let examData;
-    if (exam_type === 'midterm') {
-      examData = await generateMidtermExam(topic.topic_name, topic.level, chapterTitles);
+    if (exam_type === "midterm") {
+      examData = await generateMidtermExam(
+        topic.topic_name,
+        topic.level,
+        chapterTitles,
+      );
     } else {
-      examData = await generateFinalExam(topic.topic_name, topic.level, chapterTitles);
+      examData = await generateFinalExam(
+        topic.topic_name,
+        topic.level,
+        chapterTitles,
+      );
     }
 
     // Create exam record
@@ -266,7 +286,7 @@ router.post('/:topic_id/generate-exam', verifyToken, async (req, res) => {
       exam_type,
       examData.mcq_questions,
       examData.short_questions,
-      examData.capstone || null
+      examData.capstone || null,
     );
 
     res.json({
@@ -275,33 +295,33 @@ router.post('/:topic_id/generate-exam', verifyToken, async (req, res) => {
       mcq_questions: examData.mcq_questions,
       short_questions: examData.short_questions,
       capstone: examData.capstone,
-      total_marks: exam_type === 'midterm' ? 30 : 50,
+      total_marks: exam_type === "midterm" ? 30 : 50,
     });
   } catch (error) {
-    console.error('Generate exam error:', error);
-    res.status(500).json({ error: 'Failed to generate exam' });
+    console.error("Generate exam error:", error);
+    res.status(500).json({ error: "Failed to generate exam" });
   }
 });
 
 // ==================== GET EXAMS ====================
-router.get('/:topic_id/exams', verifyToken, async (req, res) => {
+router.get("/:topic_id/exams", verifyToken, async (req, res) => {
   try {
     const topic = await db.getTopic(req.params.topic_id);
 
     if (!topic) {
-      return res.status(404).json({ error: 'Topic not found' });
+      return res.status(404).json({ error: "Topic not found" });
     }
 
     // Verify ownership
     if (topic.user_id !== req.userId) {
-      return res.status(403).json({ error: 'Unauthorized' });
+      return res.status(403).json({ error: "Unauthorized" });
     }
 
     const exams = await db.getExams(req.params.topic_id);
     res.json(exams);
   } catch (error) {
-    console.error('Get exams error:', error);
-    res.status(500).json({ error: 'Failed to get exams' });
+    console.error("Get exams error:", error);
+    res.status(500).json({ error: "Failed to get exams" });
   }
 });
 

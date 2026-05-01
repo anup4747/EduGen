@@ -27,7 +27,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // ==================== AUTH ENDPOINTS ====================
@@ -155,7 +155,12 @@ export async function generateExam(topic_id, exam_type) {
 
 // ==================== CHAT ====================
 
-export async function sendChat(message, topic = "", context = "", conversation_history = []) {
+export async function sendChat(
+  message,
+  topic = "",
+  context = "",
+  conversation_history = [],
+) {
   const { data } = await api.post("/chat", {
     message,
     topic,
@@ -172,7 +177,13 @@ export async function getProfile(user_id) {
   return data;
 }
 
-export async function updateProfile(full_name, username, bio, avatar_data, avatar_url) {
+export async function updateProfile(
+  full_name,
+  username,
+  bio,
+  avatar_data,
+  avatar_url,
+) {
   const { data } = await api.post("/profile/update", {
     full_name,
     username,
@@ -203,7 +214,13 @@ export async function uploadProfilePicture(file) {
 
 // ==================== NOTES ====================
 
-export async function createNote(topic_id, chapter_number, selected_text, note_text, highlight_color) {
+export async function createNote(
+  topic_id,
+  chapter_number,
+  selected_text,
+  note_text,
+  highlight_color,
+) {
   const { data } = await api.post("/profile/create", {
     topic_id,
     chapter_number,
@@ -218,6 +235,7 @@ export async function getUserNotes(topic_id) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) throw new Error("User not authenticated");
   const { data } = await api.get(`/profile/${user.id}/${topic_id}`);
   return data;
 }
@@ -248,6 +266,7 @@ export async function getAnalytics(topic_id) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) throw new Error("User not authenticated");
   const { data } = await api.get(`/analytics/${user.id}/${topic_id}`);
   return data;
 }
@@ -256,13 +275,20 @@ export async function getUserAnalytics() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) throw new Error("User not authenticated");
   const { data } = await api.get(`/analytics/user/${user.id}`);
   return data;
 }
 
 // ==================== FEEDBACK ====================
 
-export async function submitFeedback(name, email, rating, feedback_type, message) {
+export async function submitFeedback(
+  name,
+  email,
+  rating,
+  feedback_type,
+  message,
+) {
   const { data } = await api.post("/feedback", {
     name,
     email,
@@ -287,6 +313,7 @@ export async function getFlashcards(topic_id) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) throw new Error("User not authenticated");
   const { data } = await api.get(`/flashcards/${user.id}/${topic_id}`);
   return data;
 }

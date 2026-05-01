@@ -36,6 +36,8 @@ export default function Navbar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const [imageError, setImageError] = useState(false);
+
   return (
     <header className="flex h-16 shrink-0 items-center justify-between bg-slate-950/80 backdrop-blur-md px-6 border-b border-slate-800/80 sticky top-0 z-50">
       <Link
@@ -58,11 +60,12 @@ export default function Navbar({
           className="flex items-center gap-3 rounded-full bg-slate-900/50 p-1 pr-1 sm:pr-4 text-left transition hover:bg-slate-800 ring-1 ring-slate-800/80 hover:ring-slate-700 active:scale-95"
         >
           <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-slate-800 text-xs font-bold text-white shadow-md">
-            {userAvatar ? (
+            {userAvatar && !imageError ? (
               <img
                 src={userAvatar}
                 alt="Profile"
                 className="h-full w-full object-cover"
+                onError={() => setImageError(true)}
               />
             ) : (
               initials(userName, userEmail)

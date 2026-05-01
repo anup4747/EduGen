@@ -55,8 +55,10 @@ export default function Profile({ user }) {
   const [formError, setFormError] = useState("");
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarData, setAvatarData] = useState("");
-  const [mongoProfile, setMongoProfile] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [userAnalytics, setUserAnalytics] = useState(null);
+  const [imageError, setImageError] = useState(false);
+  const [previewError, setPreviewError] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -75,7 +77,7 @@ export default function Profile({ user }) {
       try {
         const profile = await getProfile(user.id);
         if (cancelled || !profile) return;
-        setMongoProfile(profile);
+        setUserProfile(profile);
         setFullName(profile.full_name || user.user_metadata?.full_name || "");
         setUsername(profile.username || user.user_metadata?.username || "");
         setBio(profile.bio || user.user_metadata?.bio || "");
@@ -106,8 +108,8 @@ export default function Profile({ user }) {
         if (!cancelled)
           setError(
             e.response?.data?.error ||
-              e.message ||
-              "Failed to load profile data",
+            e.message ||
+            "Failed to load profile data",
           );
       } finally {
         if (!cancelled) setLoading(false);
@@ -148,7 +150,7 @@ export default function Profile({ user }) {
       // 1. Upload to Supabase if a new file is selected
       if (avatarFile) {
         try {
-          const uploadRes = await uploadProfilePicture(user.id, avatarFile);
+          const uploadRes = await uploadProfilePicture(avatarFile);
           if (uploadRes.success && uploadRes.profile_url) {
             finalAvatarUrl = uploadRes.profile_url;
             setAvatarUrl(finalAvatarUrl);
@@ -163,7 +165,6 @@ export default function Profile({ user }) {
 
       // 2. Update other profile fields in MongoDB
       const profileResponse = await updateProfile(
-        user.id,
         fullName,
         username,
         bio,
@@ -172,7 +173,7 @@ export default function Profile({ user }) {
       );
 
       if (profileResponse?.profile) {
-        setMongoProfile(profileResponse.profile);
+        setUserProfile(profileResponse.profile);
       }
 
       const { error: updateError } = await supabase.auth.updateUser({
@@ -186,7 +187,10 @@ export default function Profile({ user }) {
       if (updateError) throw updateError;
 
       setSuccess("Profile updated successfully.");
-      setTimeout(() => setIsEditing(false), 1500);
+      setTimeout(() => {
+        setIsEditing(false);
+        window.location.reload();
+      }, 1500);
     } catch (err) {
       setFormError(err.message || "Failed to update profile.");
     } finally {
@@ -194,17 +198,19 @@ export default function Profile({ user }) {
     }
   }
 
+  const displayProfile = userProfile || {};
+
   const profileHandle =
-    username ||
+    displayProfile.username ||
     user?.user_metadata?.username ||
     user?.email?.split("@")[0] ||
     "learner";
   const displayName =
-    fullName || user?.user_metadata?.full_name || user?.email || "Learner";
+    displayProfile.full_name || user?.user_metadata?.full_name || user?.email || "Learner";
   const bioText =
-    bio || user?.user_metadata?.bio || "Learning and growing every day.";
+    displayProfile.bio || user?.user_metadata?.bio || "Learning and growing every day.";
   const profileImage =
-    avatarData || avatarUrl || user?.user_metadata?.avatar_url || "";
+    displayProfile.avatar_data || displayProfile.avatar_url || user?.user_metadata?.avatar_url || "";
   const completedTopics = topics.filter((t) => t.completed).length;
 
   return (
@@ -243,11 +249,12 @@ export default function Profile({ user }) {
               <div className="relative group shrink-0">
                 <div className="absolute -inset-1 bg-gradient-to-r from-vscode-accent to-purple-600 rounded-full blur opacity-25 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
                 <div className="relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-slate-900 text-4xl font-bold text-white border-2 border-slate-800 shadow-xl">
-                  {profileImage ? (
+                  {profileImage && !imageError ? (
                     <img
                       src={profileImage}
                       alt="Profile"
                       className="h-full w-full object-cover"
+                      onError={() => setImageError(true)}
                     />
                   ) : (
                     <span>{renderInitials(displayName, profileHandle)}</span>
@@ -467,11 +474,14 @@ export default function Profile({ user }) {
           <div className="flex flex-col items-center justify-center p-6 bg-slate-900/50 rounded-3xl border border-slate-800 border-dashed mb-8">
             <div className="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mb-4 text-slate-500 overflow-hidden relative group">
               {avatarData || avatarUrl || profileImage ? (
-                <img
-                  src={avatarData || avatarUrl || profileImage}
-                  alt="Profile preview"
-                  className="h-full w-full object-cover"
-                />
+                previewError ? <User size={32} /> : (
+                  <img
+                    src={avatarData || avatarUrl || profileImage}
+                    alt="Profile preview"
+                    className="h-full w-full object-cover"
+                    onError={() => setPreviewError(true)}
+                  />
+                )
               ) : (
                 <User size={32} />
               )}
@@ -503,6 +513,7 @@ export default function Profile({ user }) {
                       setAvatarData(reader.result);
                       setAvatarUrl("");
                       setAvatarFile(file);
+                      setPreviewError(false); // Reset preview error on new file
                       setFormError("");
                     }
                   };
