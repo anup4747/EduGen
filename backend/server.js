@@ -23,32 +23,36 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
+const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS ? process.env.CORS_ALLOWED_ORIGINS.split(',') : [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5174',
+  'http://localhost:4173',
+  'https://edu-gen-kappa.vercel.app'
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      callback(null, true);
+    } else {
+      callback(null, origin); // Dynamically allow other origins to prevent CORS errors during deployment
+    }
+  },
+  credentials: true,
+};
+
 // Socket.IO configuration
 const io = new Server(server, {
   cors: {
-    origin: process.env.CORS_ALLOWED_ORIGINS?.split(',') || [
-      'http://localhost:5173',
-      'http://127.0.0.1:5173',
-      'http://localhost:5174',
-      'http://127.0.0.1:5174',
-      'http://localhost:4173',
-    ],
+    ...corsOptions,
     methods: ['GET', 'POST'],
-    credentials: true,
   },
 });
 
 // Middleware
-app.use(cors({
-  origin: process.env.CORS_ALLOWED_ORIGINS?.split(',') || [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://localhost:5174',
-    'http://127.0.0.1:5174',
-    'http://localhost:4173',
-  ],
-  credentials: true,
-}));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
