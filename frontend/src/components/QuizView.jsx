@@ -48,7 +48,7 @@ export default function QuizView({
     setSubmitted(true);
     setSaving(true);
     try {
-      await submitQuiz(quiz._id, answers, correct);
+      await submitQuiz(quiz.id, answers, correct);
       if (onRefresh) await onRefresh();
     } catch (e) {
       setError(e.response?.data?.error || e.message || "Save failed");

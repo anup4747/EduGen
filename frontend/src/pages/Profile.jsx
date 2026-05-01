@@ -394,7 +394,7 @@ export default function Profile({ user }) {
               <div className="grid gap-4 sm:grid-cols-2">
                 {topics.map((topic) => (
                   <div
-                    key={topic._id}
+                    key={topic.id}
                     className="group rounded-3xl bg-slate-900/50 p-6 border border-slate-800/80 hover:bg-slate-900 hover:border-slate-700 transition-all duration-300"
                   >
                     <div className="flex flex-col gap-4">

@@ -78,7 +78,7 @@ const TextSelector = ({
 
     try {
       if (editingNote) {
-        await updateNote(editingNote._id, noteText);
+        await updateNote(editingNote.id, noteText);
       } else {
         await createNote(
           user.id,

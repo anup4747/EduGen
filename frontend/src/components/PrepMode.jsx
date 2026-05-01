@@ -115,7 +115,7 @@ export default function PrepMode({ topicId, topicName, userId, onStartExam }) {
                <div className="grid grid-cols-1 gap-4">
                   {exams.map((exam, i) => (
                      <button
-                        key={exam._id}
+                        key={exam.id}
                         onClick={() => onStartExam(exam)}
                         className="group relative flex items-center justify-between p-6 rounded-3xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-vscode-accent/30 transition-all duration-300 text-left overflow-hidden"
                      >

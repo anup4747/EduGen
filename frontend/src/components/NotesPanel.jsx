@@ -35,7 +35,7 @@ const NotesPanel = ({ user, topicId, isOpen, reload, onClose }) => {
     if (!editingNote || !editText.trim()) return;
 
     try {
-      await updateNote(editingNote._id, editText);
+      await updateNote(editingNote.id, editText);
       setEditingNote(null);
       setEditText("");
       loadNotes();
@@ -103,12 +103,12 @@ const NotesPanel = ({ user, topicId, isOpen, reload, onClose }) => {
           ) : (
             <div className="space-y-4">
               {notes.map((note) => (
-                <div key={note._id} className="bg-slate-900/50 rounded-2xl p-4 border border-slate-800 ring-1 ring-white/5 hover:bg-slate-900 hover:border-slate-700 transition duration-300">
+                <div key={note.id} className="bg-slate-900/50 rounded-2xl p-4 border border-slate-800 ring-1 ring-white/5 hover:bg-slate-900 hover:border-slate-700 transition duration-300">
                   <div className={`p-3 rounded-xl mb-4 border text-[13px] leading-snug italic font-medium ${highlightColors[note.highlight_color] || highlightColors.yellow}`}>
                     "{note.selected_text}"
                   </div>
 
-                  {editingNote && editingNote._id === note._id ? (
+                  {editingNote && editingNote.id === note.id ? (
                     <div className="space-y-3 animate-[fade-in_0.2s_ease-out_forwards]">
                       <textarea
                         value={editText}
@@ -148,7 +148,7 @@ const NotesPanel = ({ user, topicId, isOpen, reload, onClose }) => {
                             <Edit2 size={12} /> Edit
                           </button>
                           <button
-                            onClick={() => handleDelete(note._id)}
+                            onClick={() => handleDelete(note.id)}
                             className="flex items-center gap-1 px-2 py-1 rounded-md text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition"
                           >
                             <Trash2 size={12} /> Delete

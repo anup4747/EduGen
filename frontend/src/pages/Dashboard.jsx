@@ -42,7 +42,7 @@ export default function Dashboard({ user }) {
     setDeletingTopicId(topic_id);
     try {
       await deleteTopic(topic_id, user.id);
-      setTopics((prev) => prev.filter((topic) => topic._id !== topic_id));
+      setTopics((prev) => prev.filter((topic) => topic.id !== topic_id));
       setActiveMenuId(null);
     } catch (err) {
       setError(
@@ -103,7 +103,7 @@ export default function Dashboard({ user }) {
             <div className="space-y-2.5">
               {topics.map((t, index) => (
                 <div
-                  key={t._id}
+                  key={t.id}
                   className="group relative rounded-2xl bg-transparent px-3 py-3 text-left transition-all hover:bg-slate-900/80 border border-transparent hover:border-slate-800 animate-[fade-in-up_0.5s_ease-out_forwards]"
                   style={{ animationDelay: `${index * 50}ms`, opacity: 0, animationFillMode: 'forwards' }}
                 >
@@ -111,7 +111,7 @@ export default function Dashboard({ user }) {
                     <button
                       type="button"
                       onClick={() => {
-                        navigate(`/learn/${t._id}`);
+                        navigate(`/learn/${t.id}`);
                         setIsSidebarOpen(false);
                       }}
                       className="flex-1 text-left min-w-0"
@@ -133,26 +133,26 @@ export default function Dashboard({ user }) {
                         onClick={(event) => {
                           event.stopPropagation();
                           setActiveMenuId((current) =>
-                            current === t._id ? null : t._id,
+                            current === t.id ? null : t.id,
                           );
                         }}
-                        className={`rounded-full p-1.5 transition-colors ${activeMenuId === t._id ? "bg-slate-800 text-white" : "text-slate-500 hover:bg-slate-800 hover:text-white opacity-0 group-hover:opacity-100"}`}
+                        className={`rounded-full p-1.5 transition-colors ${activeMenuId === t.id ? "bg-slate-800 text-white" : "text-slate-500 hover:bg-slate-800 hover:text-white opacity-0 group-hover:opacity-100"}`}
                       >
                         <MoreVertical size={14} />
                       </button>
-                      {activeMenuId === t._id && (
+                      {activeMenuId === t.id && (
                         <div className="absolute right-0 top-full z-20 mt-1 w-36 rounded-2xl border border-slate-700 bg-slate-900 p-1.5 shadow-xl">
                           <button
                             type="button"
                             onClick={(event) => {
                               event.stopPropagation();
-                              handleDeleteTopic(t._id);
+                              handleDeleteTopic(t.id);
                             }}
-                            disabled={deletingTopicId === t._id}
+                            disabled={deletingTopicId === t.id}
                             className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold text-rose-400 transition hover:bg-rose-500/10 disabled:opacity-50"
                           >
                             <Trash2 size={12} />
-                            {deletingTopicId === t._id ? "Deleting…" : "Delete topic"}
+                            {deletingTopicId === t.id ? "Deleting…" : "Delete topic"}
                           </button>
                         </div>
                       )}
@@ -210,7 +210,7 @@ export default function Dashboard({ user }) {
               <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {topics.map((t, idx) => (
                   <div
-                    key={t._id}
+                    key={t.id}
                     className="group relative flex flex-col rounded-[2rem] bg-slate-900/50 p-6 ring-1 ring-slate-800 shadow-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(124,58,237,0.15)] hover:bg-slate-900 hover:-translate-y-1 hover:ring-vscode-accent/30 animate-[fade-in-up_0.5s_ease-out_forwards]"
                     style={{ animationDelay: `${idx * 100}ms`, opacity: 0, animationFillMode: 'forwards' }}
                   >
@@ -226,25 +226,25 @@ export default function Dashboard({ user }) {
                           type="button"
                           onClick={(event) => {
                             event.stopPropagation();
-                            setActiveMenuId((current) => current === t._id ? null : t._id);
+                            setActiveMenuId((current) => current === t.id ? null : t.id);
                           }}
                           className="rounded-full p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
                         >
                           <MoreVertical size={16} />
                         </button>
-                        {activeMenuId === t._id && (
+                        {activeMenuId === t.id && (
                           <div className="absolute right-0 top-full z-20 mt-2 w-40 rounded-2xl border border-slate-700 bg-slate-900 p-1.5 shadow-2xl">
                             <button
                               type="button"
                               onClick={(event) => {
                                 event.stopPropagation();
-                                handleDeleteTopic(t._id);
+                                handleDeleteTopic(t.id);
                               }}
-                              disabled={deletingTopicId === t._id}
+                              disabled={deletingTopicId === t.id}
                               className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold text-rose-400 transition hover:bg-rose-500/10 disabled:opacity-50"
                             >
                               <Trash2 size={14} />
-                              {deletingTopicId === t._id ? "Deleting…" : "Delete"}
+                              {deletingTopicId === t.id ? "Deleting…" : "Delete"}
                             </button>
                           </div>
                         )}
@@ -253,7 +253,7 @@ export default function Dashboard({ user }) {
 
                     <button
                       type="button"
-                      onClick={() => navigate(`/learn/${t._id}`)}
+                      onClick={() => navigate(`/learn/${t.id}`)}
                       className="flex-1 text-left focus:outline-none focus:ring-0 after:absolute after:inset-0 after:z-0"
                     >
                       <h3 className="text-xl font-bold text-slate-100 mb-2 truncate group-hover:text-vscode-accent transition-colors">

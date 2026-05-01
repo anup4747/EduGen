@@ -83,7 +83,7 @@ export default function ExamView({
     };
     setSaving(true);
     try {
-      await submitExam(exam._id, user_answers, total);
+      await submitExam(exam.id, user_answers, total);
       if (onRefresh) await onRefresh();
       if (onDone)
         await Promise.resolve(onDone(total, maxMarks, passMarks, isFinal));

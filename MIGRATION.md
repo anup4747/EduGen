@@ -1,53 +1,422 @@
-# Migration Guide: From v1 to v2
+# Migration Guide: Flask + MongoDB to Node.js + Supabase
 
-## What Changed
+## 🎯 Overview
 
-### Original Version (v1)
-- **Frontend**: Plain HTML/CSS/JavaScript
-- **Backend**: FastAPI
-- **AI Provider**: OpenAI (GPT-3.5-turbo)
-- **Language**: Python
-- **Ecosystem**: Minimal dependencies
+This document details the complete migration of EduGen from a **Flask + MongoDB** stack to a modern **Node.js (Express) + Supabase (PostgreSQL)** architecture.
 
-### New Version (v2)
-- **Frontend**: React 18
-- **Backend**: Flask
-- **AI Provider**: Google Gemini API
-- **Language**: Python + JavaScript
-- **Ecosystem**: npm + pip
+### What Changed
 
-## File Mapping
+| Aspect | Before | After |
+|---|---|---|
+| **Backend Framework** | Flask (Python) | Express.js (Node.js) |
+| **Database** | MongoDB (NoSQL) | Supabase/PostgreSQL (SQL) |
+| **Authentication** | Flask-JWT | Supabase Auth + JWT |
+| **Real-time** | Flask-SocketIO | Socket.IO for Node |
+| **IDs** | MongoDB ObjectId | UUID (v4) |
+| **Deployment** | Heroku/AWS | Vercel/Railway/DigitalOcean |
 
-| v1 File | v2 Location | Changes |
-|---------|-------------|---------|
-| index.html | frontend/public/index.html | Simplified, now just a root div |
-| styles.css | frontend/src/*.css | Split into component-specific CSS files |
-| script.js | frontend/src/components/*.js | Refactored into React components |
-| server.py | backend/app.py | Refactored from FastAPI to Flask |
-| requirements.txt | backend/requirements.txt | Updated dependencies |
+---
 
-## Frontend Refactoring
+## 📊 Database Schema Changes
 
-### v1 Approach (Vanilla JS)
+### New Table Structure
+
+All MongoDB collections converted to PostgreSQL tables with:
+- **UUIDs** instead of ObjectIds
+- **Row-Level Security (RLS)** policies for data isolation
+- **JSONB** for complex nested data
+- **Automatic timestamps** with `updated_at` triggers
+- **Foreign keys** for referential integrity
+
+### Tables Created
+
+```sql
+-- Core Tables
+profiles          -- User profile data
+topics            -- Learning topics/courses
+chapters          -- Course chapters with content
+quizzes           -- Chapter assessments
+exams             -- Comprehensive exams (midterm/final)
+results           -- Assessment results with scores
+
+-- User Data
+notes             -- User annotations on chapters
+flashcards        -- Study cards
+analytics         -- Study time tracking
+achievements      -- Badges and rewards
+
+-- Feedback
+feedback          -- User feedback/bug reports
+
+-- Auth (Built-in Supabase)
+auth.users        -- User accounts and authentication
+```
+
+See [backend/migrations/001_initial_schema.sql](backend/migrations/001_initial_schema.sql) for full schema.
+
+---
+
+## 🔐 Authentication Overhaul
+
+### NEW Auth Endpoints
+
+```
+POST   /api/auth/signup              Register new user
+POST   /api/auth/login               Login and get session
+POST   /api/auth/logout              Logout (expires session)
+GET    /api/auth/me                  Get current user (requires token)
+POST   /api/auth/refresh-token       Refresh JWT token
+POST   /api/auth/reset-password      Send password reset email
+POST   /api/auth/update-password     Update user password
+```
+
+### Request Authentication
+
+**All endpoints** (except auth/feedback) now require:
+```http
+Authorization: Bearer eyJhbGc...  (JWT from Supabase)
+```
+
+**Frontend automatically includes this** via axios interceptor:
 ```javascript
-// Direct DOM manipulation
-document.getElementById('topicForm').addEventListener('submit', function(event) {
-    // 200+ lines of event handlers
-    // Document queries scattered throughout
-    // State managed via variables & sets
+api.interceptors.request.use(async (config) => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.access_token) {
+    config.headers.Authorization = `Bearer ${session.access_token}`;
+  }
+  return config;
 });
 ```
 
-### v2 Approach (React)
+### User ID Handling
+
+**Before**: Explicitly passed in request body
+```json
+POST /api/topics/create
+{
+  "user_id": "507f1f77bcf86cd799439011",  // Sent by client
+  "topic_name": "Python Basics",
+  "level": "beginner"
+}
+```
+
+**After**: Auto-extracted from JWT token
+```json
+POST /api/topics/create
+{
+  "topic_name": "Python Basics",
+  "level": "beginner"
+  // user_id automatically from Authorization header
+}
+```
+
+---
+
+## 🔌 Backend API Changes
+
+### Simplified Function Signatures
+
+| Operation | Before | After |
+|---|---|---|
+| Create topic | `createTopic(user_id, name, level)` | `createTopic(name, level)` |
+| Get topics | `getUserTopics(user_id)` | `getUserTopics()` |
+| Get profile | `getProfile(user_id)` | `getProfile(user_id)` |
+| Submit quiz | `submitQuiz(quiz_id, user_id, answers, score)` | `submitQuiz(quiz_id, answers, score)` |
+
+### Endpoint Changes
+
+**Modified Routes**:
+```
+GET  /api/topics/<user_id>          →  GET  /api/topics              (no user_id in URL)
+GET  /api/topic/<topic_id>          →  GET  /api/topics/<topic_id>   (plural)
+POST /api/exam/submit               →  POST /api/exam/exam/submit    (nested)
+```
+
+**New Routes**:
+```
+POST /api/topics/<id>/generate-exam     Generate midterm/final exam
+GET  /api/topics/<id>/exams             Get exams for topic
+```
+
+**Removed Routes**:
+```
+GET  /api/exams/<exam_id>          (use WebSocket instead)
+POST /api/exams/generate           (use /topics/<id>/generate-exam)
+```
+
+---
+
+## 💻 Frontend API Client Updates
+
+### Import Statement
 ```javascript
-// Component-based structure
-function TopicForm({ onExamCreated, onLoading }) {
-    const [topic, setTopic] = useState('');
-    
-    const handleSubmit = async (e) => {
-        onLoading(true);
-        try {
-            const data = await createExam(topic);
+// NEW - Import Supabase
+import { supabase } from "../supabaseClient";
+```
+
+### Updated Function Usage
+
+**Before**:
+```javascript
+import * as learnpath from "../api/learnpath";
+import { supabase } from "../supabaseClient";
+
+const user = supabase.auth.getUser();
+const topics = await learnpath.getUserTopics(user.id);
+const profile = await learnpath.getProfile(user.id);
+```
+
+**After**:
+```javascript
+import * as learnpath from "../api/learnpath";
+
+// User ID not needed - auto from JWT
+const topics = await learnpath.getUserTopics();
+const profile = await learnpath.getProfile();  // Still takes user_id for direct lookup
+```
+
+### New Auth Functions
+```javascript
+// NEW in learnpath.js
+signup(email, password, fullName)       // Register
+login(email, password)                  // Login
+logout()                                // Logout
+getCurrentUser()                        // Get current user data
+```
+
+---
+
+## 🛠️ Setup Instructions
+
+### 1. Supabase Setup
+
+1. Create project at https://supabase.com
+2. Copy **Project URL** and **Anon Key** from Settings
+3. Go to SQL Editor
+4. Run [backend/migrations/001_initial_schema.sql](backend/migrations/001_initial_schema.sql)
+
+### 2. Backend Setup
+
+```bash
+cd backend
+npm install
+
+# Create .env file
+echo "SUPABASE_URL=https://your-project.supabase.co" > .env
+echo "SUPABASE_ANON_KEY=eyJ..." >> .env
+echo "SUPABASE_SERVICE_ROLE_KEY=eyJ..." >> .env
+echo "GEMINI_API_KEY=AIzaSy..." >> .env
+echo "PORT=5000" >> .env
+
+# Start server
+npm run dev
+```
+
+### 3. Frontend Setup
+
+```bash
+cd frontend
+
+# Create .env.local
+echo "VITE_SUPABASE_URL=https://your-project.supabase.co" > .env.local
+echo "VITE_SUPABASE_ANON_KEY=eyJ..." >> .env.local
+echo "VITE_BACKEND_URL=http://localhost:5000/api" >> .env.local
+
+# Start app
+npm run dev
+```
+
+---
+
+## 📝 Environment Variables
+
+### Backend .env
+
+```ini
+# Supabase Configuration
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=eyJhbGc...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGc...  # For admin operations
+
+# Google Gemini API
+GEMINI_API_KEY=AIzaSy...
+GEMINI_MODEL=gemini-1.5-flash
+
+# Server
+PORT=5000
+NODE_ENV=development
+
+# CORS
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:5174,http://localhost:4173
+
+# Frontend URL
+FRONTEND_URL=http://localhost:5173
+```
+
+### Frontend .env.local
+
+```ini
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJ...
+VITE_BACKEND_URL=http://localhost:5000/api
+```
+
+---
+
+## 🔄 API Endpoint Reference
+
+### Authentication (NEW)
+- `POST /api/auth/signup`
+- `POST /api/auth/login`
+- `POST /api/auth/logout`
+- `GET /api/auth/me`
+- `POST /api/auth/refresh-token`
+
+### Topics Management
+- `POST /api/topics/create` - Create topic with AI-generated roadmap
+- `GET /api/topics` - List user's topics
+- `GET /api/topics/<id>` - Get single topic with status
+- `GET /api/topics/status/<id>` - Check generation progress
+- `DELETE /api/topics/<id>` - Delete topic
+- `POST /api/topics/<id>/complete` - Mark topic complete
+- `POST /api/topics/<id>/generate-exam` - Generate exam
+- `GET /api/topics/<id>/exams` - Get all topic exams
+
+### Content Retrieval
+- `GET /api/chapters/<topic_id>` - Get chapter list
+- `GET /api/quizzes/<topic_id>` - Get quizzes (auto-generated)
+- `GET /api/exams/<topic_id>` - Get exams for topic
+
+### Assessment
+- `POST /api/quiz/submit` - Submit quiz answers
+- `POST /api/exam/exam/submit` - Submit exam
+- `GET /api/results/<topic_id>` - Get aggregated results
+
+### Learning Resources
+- `POST /api/chat` - Send message to AI tutor
+- `ws: chat_stream` - WebSocket streaming chat
+- `POST /api/flashcards/create` - Create study cards
+- `GET /api/flashcards/<user_id>/<topic_id>` - Get flashcards
+- `POST /api/profile/create` - Create note
+- `GET /api/profile/<user_id>/<topic_id>` - Get notes
+- `PUT /api/profile/update/<note_id>` - Update note
+- `DELETE /api/profile/delete/<note_id>` - Delete note
+
+### User Profile
+- `GET /api/profile/<user_id>` - Get profile
+- `POST /api/profile/update` - Update profile info
+- `POST /api/profile/upload-profile-picture` - Upload avatar
+
+### Analytics & Feedback
+- `POST /api/analytics/study` - Track study session
+- `GET /api/analytics/<user_id>/<topic_id>` - Get topic analytics
+- `GET /api/analytics/user/<user_id>` - Get all user analytics
+- `POST /api/feedback` - Submit feedback (public)
+
+---
+
+## 🚀 Deployment
+
+### Backend (Express on Node.js)
+
+**Vercel**:
+```bash
+npm install -g vercel
+vercel --prod
+```
+
+**Railway**:
+```bash
+railway link
+railway up
+```
+
+**Docker**:
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 5000
+CMD ["npm", "start"]
+```
+
+### Frontend (Already configured)
+
+Deploy folder: `frontend/dist`
+
+**Vercel**: Already configured in [vercel.json](vercel.json)
+```bash
+npm run build
+vercel --prod
+```
+
+---
+
+## ✅ Migration Checklist
+
+- [ ] Create Supabase project
+- [ ] Run SQL migration script
+- [ ] Copy Supabase credentials to backend .env
+- [ ] Install backend dependencies (`npm install`)
+- [ ] Test backend locally (`npm run dev`)
+- [ ] Update frontend .env.local
+- [ ] Test frontend locally (`npm run dev`)
+- [ ] Test all API endpoints
+- [ ] Test authentication flow
+- [ ] Test WebSocket chat
+- [ ] Deploy backend
+- [ ] Deploy frontend
+- [ ] Test production environment
+
+---
+
+## 🐛 Troubleshooting
+
+| Issue | Solution |
+|---|---|
+| `401 Unauthorized` | Check JWT token, ensure Supabase session is active |
+| `CORS Error` | Add frontend URL to `CORS_ALLOWED_ORIGINS` in .env |
+| `Database connection failed` | Verify Supabase URL and keys, check network |
+| `Endpoint not found (404)` | Verify route in Express app.js, check axios baseURL |
+| `WebSocket connection failed` | Check Socket.IO CORS settings, verify port 5000 |
+
+---
+
+## 📚 Resources
+
+- [Supabase Docs](https://supabase.com/docs)
+- [Express.js Guide](https://expressjs.com)
+- [Socket.IO Documentation](https://socket.io/docs)
+- [Google Gemini API](https://ai.google.dev)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs)
+
+---
+
+## Summary of Benefits
+
+✅ **Node.js Advantages**:
+- Faster async I/O performance
+- Better real-time support
+- Easier to deploy (Vercel, Railway, etc.)
+- Modern JavaScript ecosystem
+
+✅ **Supabase Advantages**:
+- Built-in Row-Level Security
+- Serverless infrastructure
+- Real-time subscriptions
+- Better JSON support (JSONB)
+- Automatic backups
+- PostgreSQL ecosystem
+
+✅ **Overall Improvements**:
+- Better security with RLS policies
+- Easier to scale horizontally
+- Reduced DevOps complexity
+- Improved data consistency
+- Better real-time capabilities
+- Modern tech stack
             onExamCreated(exam, topic);
         } finally {
             onLoading(false);

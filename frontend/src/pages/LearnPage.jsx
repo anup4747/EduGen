@@ -131,7 +131,7 @@ export default function LearnPage({ user }) {
 
   const resultItems = useMemo(() => {
     const quizResults = quizzes.map((q) => ({
-      id: q._id,
+      id: q.id,
       title: `Quiz ${q.chapter_number}`,
       detail: q.completed
         ? `${q.score}/${q.questions?.length || 5}`
@@ -143,7 +143,7 @@ export default function LearnPage({ user }) {
     }));
 
     const examResults = exams.map((exam) => ({
-      id: exam._id,
+      id: exam.id,
       title: exam.title || `Exam ${exam.exam_number || ""}`,
       detail: exam.completed
         ? `${exam.score}/${exam.total_marks || 0}`
@@ -172,7 +172,7 @@ export default function LearnPage({ user }) {
 
   function showChapter(ch, idx) {
     openTab({
-      id: `blog-${ch._id}`,
+      id: `blog-${ch.id}`,
       title: ch.title?.slice(0, 24) || `Ch ${ch.chapter_number}`,
       type: "blog",
       chapter: ch,
@@ -184,7 +184,7 @@ export default function LearnPage({ user }) {
 
   function showQuiz(q) {
     openTab({
-      id: `quiz-${q._id}`,
+      id: `quiz-${q.id}`,
       title: `Quiz ${q.chapter_number}`,
       type: "quiz",
       quiz: q,
@@ -314,7 +314,7 @@ export default function LearnPage({ user }) {
               <button
                 type="button"
                 onClick={() =>
-                  navigate(`/learn/${topic_id}/exam/${exams[0]._id}`, {
+                  navigate(`/learn/${topic_id}/exam/${exams[0].id}`, {
                     state: { exam: exams[0], topicName: topic?.topic_name },
                   })
                 }
@@ -334,7 +334,7 @@ export default function LearnPage({ user }) {
                 const qz = quizByChapter[ch.chapter_number];
                 const done = qz?.completed;
                 return (
-                  <div key={ch._id} className="relative pl-10 pr-2 py-1">
+                  <div key={ch.id} className="relative pl-10 pr-2 py-1">
                     <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full border-4 border-[#080b12] z-10 flex items-center justify-center ${done ? 'bg-emerald-500 border-emerald-900' : 'bg-slate-800'}`}>
                        {done ? <CheckCircle2 size={12} className="text-white" /> : <BookOpen size={12} className="text-slate-400" />}
                     </div>
@@ -363,7 +363,7 @@ export default function LearnPage({ user }) {
             <div className="space-y-1">
                {quizzes.length > 0 ? sortChapters(quizzes).map((q) => (
                  <button
-                   key={`sidebar-quiz-${q._id}`}
+                   key={`sidebar-quiz-${q.id}`}
                    type="button"
                    onClick={() => showQuiz(q)}
                    className="group flex w-full items-center justify-between rounded-2xl px-4 py-2.5 text-left bg-slate-900/30 hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-700/80"
@@ -592,7 +592,7 @@ export default function LearnPage({ user }) {
           onStartExam={(exam) => {
             setShowPrepMode(false);
             if (exam) {
-              navigate(`/learn/${topic_id}/exam/${exam._id}`, {
+              navigate(`/learn/${topic_id}/exam/${exam.id}`, {
                 state: { exam, topicName: topic.topic_name },
               });
             }
